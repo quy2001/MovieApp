@@ -1,15 +1,50 @@
+import 'dart:async';
+
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:movieapp/data/core/api_client.dart';
 import 'package:movieapp/data/data_sources/movie_remote_data_source.dart';
+import 'package:movieapp/data/repositories/movie_repository_impl.dart';
+import 'package:movieapp/domain/entities/app_error.dart';
+import 'package:movieapp/domain/entities/movie_entity.dart';
+import 'package:movieapp/domain/entities/no_params.dart';
+import 'package:movieapp/domain/repositories/movie_reponsitory.dart';
+import 'package:movieapp/domain/usecases/get_trending.dart';
+import 'package:movieapp/di/get_it.dart' as getIt;
 
-void main() {
-  ApiClient apiClient = ApiClient(Client());
-  MovieRemoteDataSource dataSource = MovieRemoteDataSourceImpl(apiClient);
-  dataSource.getTrending();
-  dataSource.getPopular();
-  dataSource.getPlayingNow();
-  dataSource.getComingSoon();
+Future<void>main() async {
+  unawaited(getIt.init());
+  // ApiClient apiClient = ApiClient(Client());
+  // MovieRemoteDataSource dataSource = MovieRemoteDataSourceImpl(apiClient);
+  // MovieRepository movieRepository = MovieRepositoryImpl(dataSource);
+  //movieRepository.getTrending();
+  //GetTrending getTrending = GetTrending(movieRepository);
+  GetTrending getTrending = getIt.getItInstance<GetTrending>();
+  final Either<AppError,List<MovieEntity>?> eitherRespone =await getTrending(NoParams());
+
+  eitherRespone.fold(
+      (l){
+        print('error');
+        print(l);
+      },
+      (r) {
+        print('list of video');
+        print(r);
+      },
+  );
+
+  //getTrending();
+  //final movies = await getTrending();
+  // if(movies !=null){
+  //
+  // }else{
+  //
+  // }
+  // dataSource.getTrending();
+  // dataSource.getPopular();
+  // dataSource.getPlayingNow();
+  // dataSource.getComingSoon();
   runApp(const MyApp());
 }
 
@@ -25,55 +60,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+      home: Container(
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
